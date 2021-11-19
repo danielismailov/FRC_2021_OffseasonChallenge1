@@ -1,8 +1,8 @@
 package frc.robot;
 
-public class CANSparkMax {
+public class CANSparkMaxBad {
 
-    public CANSparkMax(int i) {
+    public CANSparkMaxBad(int i) {
     }
 
     public void set(double d) {
