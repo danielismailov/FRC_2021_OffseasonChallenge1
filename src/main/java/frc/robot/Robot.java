@@ -4,10 +4,15 @@
 
 package frc.robot;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.PWMSparkMax;
 //import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,11 +26,12 @@ ion. If you change the name of this class or
  * project.
  */
 public class Robot extends TimedRobot {
-  private CANSparkMax leftmotor1;
-  private CANSparkMax leftmotor2;
-  private CANSparkMax rightmotor1;
-  private CANSparkMax rightmotor2;
-  private Joystick joy1, joy2;
+  private CANSparkMax leftMotor1;
+  private CANSparkMax leftMotor2;
+  private CANSparkMax rightMotor1;
+  private CANSparkMax rightMotor2;
+  private Joystick driver;
+  DifferentialDrive drive;
 
 
   private Command m_autonomousCommand;
@@ -42,13 +48,21 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    rightmotor1 = new CANSparkMax(1);
-    rightmotor2 = new CANSparkMax(2);
-    leftmotor1 = new CANSparkMax(3);
-    leftmotor2 = new CANSparkMax(4);
+    rightMotor1 = new CANSparkMax(28, MotorType.kBrushless);
+    rightMotor2 = new CANSparkMax(29, MotorType.kBrushless);
+    leftMotor1 = new CANSparkMax(14, MotorType.kBrushless);
+    leftMotor2 = new CANSparkMax(15, MotorType.kBrushless);
+    configureMotor(rightMotor1);
+    configureMotor(rightMotor2);
+    configureMotor(leftMotor1);
+    configureMotor(leftMotor2);
 
-    joy1 = new Joystick(0);
-    joy2 = new Joystick(1);
+    leftMotor2.follow(leftMotor1);
+    // rightMotor2.follow(rightMotor1);
+
+    drive = new DifferentialDrive(leftMotor1, rightMotor1);
+
+    driver = new Joystick(0);
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
@@ -110,27 +124,27 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    double throttle = joy1.getY();
-    double turn = joy2.getX();
+    // double throttle = -driver.getRawAxis(1);
+    // double turn = -driver.getRawAxis(4);
 
-    double left = throttle + turn;
-    double right = throttle - turn;
+    // SmartDashboard.putNumber("throttle", throttle);
+    // SmartDashboard.putNumber("turn", turn );
 
-    SmartDashboard.putNumber("left", left);
-    SmartDashboard.putNumber("right", right);
-
-    leftmotor1.set(left);
-    leftmotor2.set(left);
-    rightmotor1.set(-right);
-    rightmotor2.set(-right);
+    drive.tankDrive(-driver.getRawAxis(0),-driver.getRawAxis(5));
   }
   @Override
   public void testInit() {
-    // Cancels all running commands at the start of test mode.
+    // Cancels all running
     CommandScheduler.getInstance().cancelAll();
   }
 
   /** This function is called periodically during test mode. */   
   @Override
   public void testPeriodic() {}
+
+  public void configureMotor(CANSparkMax motor) {
+    motor.setSmartCurrentLimit(80);
+    motor.setIdleMode(IdleMode.kCoast);
+  }
+
 }
